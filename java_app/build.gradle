@@ -1,0 +1,92 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+// We need Gradle to finish configuring the other sub-project first, because we need to
+// refer to two of its tasks below.
+evaluationDependsOn ':c_library'
+
+def libTasks = project(':c_library').tasks
+def debugLibTask = libTasks.matching{ it.name.startsWith('linkDebug') }.first()
+def releaseLibTask = libTasks.matching{ it.name.startsWith('linkRelease') }.first()
+
+repositories {
+    // Use jcenter for resolving dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+dependencies {
+
+
+    // Make this subproject ('java_app') depend on the file produced by the linking task in the 
+    // other subproject.
+    runtimeOnly files(releaseLibTask.linkedFile)
+
+    implementation project(':Plugin_API')
+    implementation project(':ProgressBar')
+    implementation project(':CSVWriter')
+    implementation project(':AdvanceEvaluator')
+    // This declaration is more convoluted than you might expect. We can't simply depend on the 
+    // other subproject as a whole, because that makes the Java plugin complain that it isn't 
+    // another Java project. There's no automated logic for tying a C library into a Java 
+    // application.
+
+
+     //https://mvnrepository.com/artifact/org.python/jython-standalone
+    implementation group: 'org.python', name: 'jython-standalone', version: '2.7.1'
+    
+    // Instead, this dependency simply causes our C library file to be included as part of the Java 
+    // application's distributable .zip file. We then have to do some setting up, in 'run{}' and 
+    // 'startScripts{}', to ensure that Java will be able to load the library.
+
+
+}
+
+application {
+   // mainClassName = 'org.example.ExampleJavaApp'
+    mainClassName = 'com.savindu.main.MainApp'
+
+}
+
+run {
+    // Make 'gradlew run' set the library path correctly. There is a Java "system property" for 
+    // this, which needs to be set to the *directory* containing the shared library.
+    
+    // We first depend on the 'linkDebug' task that creates the debug version of the library, to
+    // ensure that task runs before the 'run' task. Then we make a few more calls to extract the 
+    // actual directory, and set the library path.
+    
+    // Debug vs release? Gradle builds two versions of our C code with different compiler options,
+    // one intended for debugging (which is what we're theoretically doing when we execute 'run'),
+    // and one for release (which is what the final .zip file is for).
+
+    standardInput System.in
+    dependsOn debugLibTask
+    systemProperty 'java.library.path', debugLibTask.linkedFile.get().asFile.parentFile
+}
+
+startScripts {
+    // Make the start-up scripts (both UNIX and Windows) set the library path correctly, so that 
+    // our application is properly distributable.
+    
+    // When our application is distributed, the native library will live inside the same 'lib/' 
+    // directory that contains the rest of our code. So the library path needs to be the 'lib/' 
+    // directory. However, we can't hardcode the location of this directory, because we can't know 
+    // in advance where the user has installed the application. Instead, we have to get the 
+    // start-up script (both the UNIX and Windows version of it) to figure it out.
+
+    // How we do *that* is a bit hacky though. We first tell the script generator how to set the 
+    // path, but at the "last minute" we go in and tweak the result, because the actual path 
+    // depends on a variable in the script that we can't access in the first instance.
+    
+    defaultJvmOpts = ['-Djava.library.path=APP_HOME_PLACEHOLDER/lib']
+    
+    doLast {
+        unixScript.text = unixScript.text.replace('APP_HOME_PLACEHOLDER', '$APP_HOME')
+        windowsScript.text = windowsScript.text.replace('APP_HOME_PLACEHOLDER', '%APP_HOME%')
+    }
+
+
+}

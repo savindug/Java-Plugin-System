@@ -1,0 +1,25 @@
+// We don't really need anything in this top-level build script to make the project work; 
+// everything is in subprojects. See c_library/build.gradle and java_app/build.gradle.
+
+// (The following code just zips up the entire example project structure so I can distribute it.)
+
+def archive = project.name + '.zip'
+
+
+
+task distProject(type: Zip) {
+    archiveFileName = archive
+    destinationDirectory = file('.')
+    
+    from '.'
+    exclude archive
+    exclude '.gradle'
+    exclude '**/build'
+    into project.name
+}
+
+task clean(type: Delete) {
+    delete archive
+}
+
+

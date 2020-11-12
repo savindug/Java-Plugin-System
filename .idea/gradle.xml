@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="disableWrapperSourceDistributionNotification" value="true" />
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleHome" value="C:/Gradle" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/AdvanceEvaluator" />
+            <option value="$PROJECT_DIR$/CSVWriter" />
+            <option value="$PROJECT_DIR$/Core_App" />
+            <option value="$PROJECT_DIR$/Plugin_API" />
+            <option value="$PROJECT_DIR$/ProgressBar" />
+            <option value="$PROJECT_DIR$/ProgressBarCPP" />
+            <option value="$PROJECT_DIR$/c_library" />
+            <option value="$PROJECT_DIR$/java_app" />
+          </set>
+        </option>
+        <option name="useQualifiedModuleNames" value="true" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>
